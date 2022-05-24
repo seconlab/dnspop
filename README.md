@@ -13,3 +13,5 @@ A script to efficiently strip suffixes from domains using data from the [Public 
 ## results/*
 
 Result sets from the above tools.
+
+## Updated 2020 to use the newest file format for Rapid7's ForwardDNS data:  https://opendata.rapid7.com/sonar.fdns_v2/
