@@ -7,12 +7,15 @@
 
 # Hello!
 echo "Subpop - (c)oded 2015-∞ Jon - bitquark.co.uk"
+echo "Subpop v2- (c)oded 2020-∞ Geoffrey - g (at) GeoffreySimpson.me"
 
 # Find the date of the most recent DNS data set
-DATA_DATE=`ls -r1 ????????_dnsrecords_all 2>/dev/null | head -1 | cut -d _ -f 1`
+# DATA_DATE=`ls -r1 ????????_dnsrecords_all 2>/dev/null | head -1 | cut -d _ -f 1`
+DATA_DATE=`ls -r1 ????-??-??-??????????-fdns_any.json 2>/dev/null | head -1 | cut -d . -f 1`
+echo "Data_date is $DATA_DATE"
 if [ -z $DATA_DATE ]; then
-	echo "[!] No DNS data found. You can download the latest data set from: https://scans.io/study/sonar.fdns"
-	exit
+        echo "[!] No DNS data found. You can download the latest data set from: https://scans.io/study/sonar.fdns"
+        exit
 fi
 echo ".oO( Using DNS data from $DATA_DATE )"
 
@@ -24,11 +27,15 @@ curl -s https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix
 # For info, see http://www.inmotionhosting.com/support/website/ssh/speed-up-grep-searches-with-lc-all
 export LC_ALL=C
 
+#get the a and c records and put them in a flat file...extracting the json using jq
+#jq -r 'select(.type=="a" or .type=="cname") | .name' $DATA_DATE".json" > crap.txt
+pv $DATA_DATE".json" | jq -r 'select(.type=="a" or .type=="cname") | .name' > $DATA_DATE".txt"
+
 # The domain list contains records of all types (e.g. mx, txt, cname), let's de-dupe the list.
 # With the 2015-06-06 data set this gets us from 1,421,085,853 (68G) records to 523,039,450 (13G)
 # There are about 1.6k records that a 'sort -u' would remove but it's not really worth the extra processing time
 echo ".oO( De-duping DNS records )"
-pv $DATA_DATE"_dnsrecords_all" | cut -d , -f 1 | uniq > $DATA_DATE"_domains_with_tld"
+pv $DATA_DATE".txt" | cut -d , -f 1 | uniq > $DATA_DATE"_domains_with_tld"
 
 # Strip TLDs from domains
 # Some TLDs use extended characters, so we unset LC_ALL here
@@ -46,4 +53,3 @@ pv $DATA_DATE"_subdomains_raw" | uniq -c | sort -rn > $DATA_DATE"_subdomains_pop
 
 # Fin
 echo "All done! Popular subdomains are in "$DATA_DATE"_subdomains_popular"
-
